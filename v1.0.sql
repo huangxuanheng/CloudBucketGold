@@ -128,7 +128,7 @@ CREATE TABLE `t_commission_rule` (
 
 CREATE TABLE `t_order` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `distributor_id` bigint(20) NOT NULL default 0 COMMENT '分销商级别ID',
+  `distributor_id` bigint(20) NOT NULL default 0 COMMENT '分销商ID',
   `target_id` bigint(20) NOT NULL default 0 COMMENT '目标ID或者说商品ID',
   `pay_type` TINYINT NOT NULL default 0 COMMENT '支付类型：0-未选择，1-支付宝，2-微信，3-零钱，4-虚拟币，5-混合',
   `price` bigint(20) NOT NULL default 0 COMMENT '商品价格，单位分',
@@ -136,6 +136,7 @@ CREATE TABLE `t_order` (
   `virtual_currency` bigint(20) NOT NULL default 0 COMMENT '虚拟币，单位分',
   `cash` bigint(20) NOT NULL default 0 COMMENT '现金（线下支付的现金人民币），单位分',
   `pay_time` datetime NOT NULL default now() COMMENT '支付时间',
+  `remark` varchar(200) NOT NULL default "" COMMENT '备注',
    `isdeleted` TINYINT  NOT NULL DEFAULT 0 COMMENT '是否删除，0正常,1删除',
    `creater` bigint(20) NOT NULL default 0 COMMENT '创建人ID',
    `updater` bigint(20) NOT NULL default 0 COMMENT '更新人ID',
@@ -148,6 +149,7 @@ CREATE TABLE `t_order` (
 CREATE TABLE `t_commission` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `order_id` bigint(20) NOT NULL default 0 COMMENT '订单ID',
+  `distributor_id` bigint(20) NOT NULL default 0 COMMENT '分销商ID',
   `commission_rule_id` bigint(20) NOT NULL default 0 COMMENT '分销商规则ID',
   `income` bigint(20) NOT NULL default 0 COMMENT '佣金收入，单位分',
    `isdeleted` TINYINT  NOT NULL DEFAULT 0 COMMENT '是否删除，0正常,1删除',
