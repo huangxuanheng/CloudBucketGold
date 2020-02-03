@@ -11,3 +11,6 @@ spring:
     show-sql: true
   jackson:
     default-property-inclusion: non_null
+  flyway:
+    enabled: true     #配置开关，true则会自动检查新脚本并执行，false则不会去执行新增脚本
+    locations: classpath:db/migration/{vendor}/dev
