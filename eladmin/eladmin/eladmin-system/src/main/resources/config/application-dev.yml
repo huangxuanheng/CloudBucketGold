@@ -43,6 +43,10 @@ spring:
         wall:
           config:
             multi-statement-allow: true
+
+
+  main:
+    allow-bean-definition-overriding: true
 #jwt
 jwt:
   header: Authorization

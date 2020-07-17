@@ -39,6 +39,12 @@
             <version>2.4</version>
         </dependency>
 
+        <dependency>
+            <groupId>me.zhengjie</groupId>
+            <artifactId>gold</artifactId>
+            <version>2.4</version>
+        </dependency>
+
         <!-- Spring boot websocket -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
