@@ -10,6 +10,5 @@ import me.zhengjie.gold.modules.consumer.service.dto.GradeDto;
  * date : 2020/7/17
  * des:
  */
-public interface IGradeService extends IBaseService<Grade> {
-    void save(GradeDto dto);
+public interface IGradeService extends IBaseService {
 }

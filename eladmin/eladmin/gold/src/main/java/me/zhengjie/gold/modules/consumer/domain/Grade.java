@@ -18,7 +18,7 @@ import javax.persistence.Table;
 @Entity
 @Getter
 @Setter
-@Table(name="t_consumer_grade")
+@Table(name="t_grade")
 public class Grade extends BaseEntityBy {
 
     @ApiModelProperty(value = "等级名称")
@@ -26,6 +26,9 @@ public class Grade extends BaseEntityBy {
 
     @ApiModelProperty(value = "佣金比例,消费商获得的实际佣金比例")
     private float commission;
+
+    @ApiModelProperty(value = "自购打折")
+    private float discount;
 
     @ApiModelProperty(value = "备注")
     private String remark;

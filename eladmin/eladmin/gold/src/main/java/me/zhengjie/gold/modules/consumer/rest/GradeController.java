@@ -21,16 +21,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.zhengjie.annotation.Log;
 import me.zhengjie.base.BaseController;
-import me.zhengjie.base.ResponseEntity;
-import me.zhengjie.gold.modules.consumer.domain.Grade;
+import me.zhengjie.base.BaseDTO;
+import me.zhengjie.exception.ConsumerExcetion;
 import me.zhengjie.gold.modules.consumer.service.IGradeService;
 import me.zhengjie.gold.modules.consumer.service.dto.GradeDto;
-
-import me.zhengjie.utils.ModelUtils;
+import me.zhengjie.utils.ErrorMsg;
+import me.zhengjie.utils.PageUtil;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Harry
@@ -39,7 +41,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Api(tags = "消费商：级别管理")
-@RequestMapping("/api/consumer")
+@RequestMapping("/api/grade")
 @Slf4j
 public class GradeController extends BaseController {
 
@@ -50,18 +52,53 @@ public class GradeController extends BaseController {
     @ApiOperation("查询级别")
     @GetMapping(value = "/list")
     @PreAuthorize("@el.check('grade:list')")
-    public ResponseEntity<List<Grade>> list(){
-        List<Grade> all = gradeService.getAll();
+    public ResponseEntity< Map<String, Object>> list(){
+        List<GradeDto> all = gradeService.getAll();
         log.info(all.toString());
-        return  success(all);
+        Map<String, Object> page = PageUtil.toPage(all, all.size());
+        return  success(page);
     }
 
     @Log("新增級別")
     @ApiOperation("查询级别")
-    @PostMapping(value = "/add")
+    @PostMapping
     @PreAuthorize("@el.check('grade:list')")
-    public void add(@RequestBody GradeDto gradeDto){
+    public ResponseEntity add(@RequestBody GradeDto gradeDto){
         gradeService.save(gradeDto);
+        return success(ErrorMsg.SUCCESS);
+    }
+
+    @Log("修改級別")
+    @ApiOperation("修改級別")
+    @PutMapping
+    @PreAuthorize("@el.check('grade:list')")
+    public ResponseEntity modify(@RequestBody GradeDto gradeDto){
+        gradeService.update(gradeDto);
+        return success(ErrorMsg.SUCCESS);
+    }
+
+    @Log("根据ID查询級別")
+    @ApiOperation("根据ID查询級別")
+    @GetMapping
+    @PreAuthorize("@el.check('grade:list')")
+    public ResponseEntity<BaseDTO> get(Long id){
+        BaseDTO baseDTO = gradeService.get(id);
+        return success(baseDTO);
+    }
+
+
+    @Log("根据ID删除級別")
+    @ApiOperation("根据ID删除級別")
+    @DeleteMapping
+    @PreAuthorize("@el.check('grade:list')")
+    public ResponseEntity<BaseDTO> del(@RequestParam("ids") Long []ids){
+        if(ids.length==0){
+            throw new ConsumerExcetion(ErrorMsg.ERR_ARR_PARAM_LEN);
+        }
+        for (Long id:ids){
+            gradeService.deleted(id);
+        }
+        return success(null);
     }
 
 }

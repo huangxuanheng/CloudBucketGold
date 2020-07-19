@@ -80,10 +80,11 @@ CREATE TABLE `t_role` (
 ) ENGINE=InnoDB COMMENT='权限信息表';
 
 
-CREATE TABLE `t_consumer_grade` (
+CREATE TABLE `t_grade` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `name` varchar(20) NOT NULL default "" COMMENT '名称',
    `commission` float NOT NULL default 0 COMMENT '佣金比例，消费商获得的实际佣金比例',
+   `discount` float NOT NULL default 0 COMMENT '自购打折',
   `remark` varchar(200) NOT NULL default "" COMMENT '备注',
    `is_del` bit(1)  NOT NULL DEFAULT 0 COMMENT '是否删除，0正常,1删除',
    `create_by` varchar(255) NOT NULL default '' COMMENT '创建人ID',
@@ -91,14 +92,14 @@ CREATE TABLE `t_consumer_grade` (
   `create_time` datetime NOT NULL default now() COMMENT '创建时间',
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB COMMENT='消费商级别表';
+) ENGINE=InnoDB COMMENT='级别表';
 
 CREATE TABLE `t_consumer` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `name` varchar(20) NOT NULL default "" COMMENT '名称',
   `parent_id`  bigint(20) NOT NULL default 0 COMMENT '父ID，上一级消费商',
   `user_id`  bigint(20) NOT NULL default 0 COMMENT '用户ID',
-  `consumer_grade_id` TINYINT  NOT NULL DEFAULT 0  COMMENT '级别id',
+  `grade_id` TINYINT  NOT NULL DEFAULT 0  COMMENT '级别id',
+  `sub_count` int not null default 0 COMMENT '子消费商数目',
   `remark` varchar(200) NOT NULL default "" COMMENT '备注',
    `is_del` bit(1)  NOT NULL DEFAULT 0 COMMENT '是否删除，0正常,1删除',
    `create_by` varchar(255) NOT NULL default '' COMMENT '创建人ID',
@@ -107,6 +108,7 @@ CREATE TABLE `t_consumer` (
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB COMMENT='消费商信息表';
+
 
 CREATE TABLE `t_config_commission` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -122,8 +124,7 @@ CREATE TABLE `t_config_commission` (
 
 CREATE TABLE `t_order` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `distributor_id` bigint(20) NOT NULL default 0 COMMENT '消费商ID',
-    `user_id` bigint(20) NOT NULL default 0 COMMENT '用户ID',
+  `user_id` bigint(20) NOT NULL default 0 COMMENT '用户ID',
   `target_id` bigint(20) NOT NULL default 0 COMMENT '目标ID或者说商品ID',
   `pay_type` TINYINT NOT NULL default 0 COMMENT '支付类型：0-未选择，1-支付宝，2-微信，3-纯现金，4-虚拟币，5-混合（线上+线下）',
   `price` bigint(20) NOT NULL default 0 COMMENT '商品价格，单位分',
@@ -163,7 +164,7 @@ CREATE TABLE `t_promotion` (
   `introduct` varchar(200) NOT NULL default '' COMMENT '促销简介',
   `rule` int not null default 0 comment '促销规则：1-满多少减多少，2-满多少打折，3-第几杯半价',
   `condition` int not null default 0 comment 'rule促销规则中满足的条件',
-    `reduce` int not null default 0 comment '促销规则：1时，表示减少金额(分)，2时，表示折扣（计算时需要除以100），3时，表示数量',
+  `reduce` int not null default 0 comment '促销规则：1时，表示减少金额(分)，2时，表示折扣（计算时需要除以100），3时，表示数量',
    `is_del` bit(1)  NOT NULL DEFAULT 0 COMMENT '是否删除，0正常,1删除',
    `create_by` varchar(255) NOT NULL default '' COMMENT '创建人ID',
     `update_by` varchar(255) NOT NULL default '' COMMENT '更新人ID',

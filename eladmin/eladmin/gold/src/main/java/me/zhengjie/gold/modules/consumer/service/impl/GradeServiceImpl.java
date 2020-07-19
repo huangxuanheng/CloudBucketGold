@@ -1,6 +1,7 @@
 package me.zhengjie.gold.modules.consumer.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import me.zhengjie.annotation.DataTransform;
 import me.zhengjie.base.BaseRepository;
 import me.zhengjie.gold.modules.consumer.domain.Grade;
 import me.zhengjie.gold.modules.consumer.repository.GradeRepository;
@@ -17,15 +18,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
+@DataTransform(dto = GradeDto.class,entity = Grade.class)
 public class GradeServiceImpl implements IGradeService {
     private final GradeRepository gradeRepository;
     @Override
     public BaseRepository getJpaRepository() {
         return gradeRepository;
-    }
-
-    @Override
-    public void save(GradeDto dto) {
-        save(ModelUtils.toEntity(dto,Grade.class));
     }
 }

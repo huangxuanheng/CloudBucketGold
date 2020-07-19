@@ -22,6 +22,9 @@ public class GradeDto extends BaseDtoBy {
     @ApiModelProperty(value = "佣金比例,消费商获得的实际佣金比例")
     private float commission;
 
+    @ApiModelProperty(value = "自购打折")
+    private float discount;
+
     @ApiModelProperty(value = "备注")
     private String remark;
 }

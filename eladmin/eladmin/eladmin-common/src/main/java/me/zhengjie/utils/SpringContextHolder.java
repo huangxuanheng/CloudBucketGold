@@ -40,6 +40,15 @@ public class SpringContextHolder implements ApplicationContextAware, DisposableB
     }
 
     /**
+     * 获取配置的属性值
+     * @param name
+     * @return
+     */
+    public static String getProperty(String name){
+        return applicationContext.getEnvironment().getProperty(name);
+    }
+
+    /**
      * 从静态变量applicationContext中取得Bean, 自动转型为所赋值对象的类型.
      */
     public static <T> T getBean(Class<T> requiredType) {

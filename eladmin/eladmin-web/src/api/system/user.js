@@ -2,7 +2,6 @@ import request from '@/utils/request'
 import { encrypt } from '@/utils/rsaEncrypt'
 
 export function add(data) {
-  
   return request({
     url: 'api/users',
     method: 'post',
@@ -19,7 +18,6 @@ export function del(ids) {
 }
 
 export function edit(data) {
-  debugger
   return request({
     url: 'api/users',
     method: 'put',
@@ -59,5 +57,12 @@ export function updateEmail(form) {
   })
 }
 
-export default { add, edit, del }
+export function getUsers() {
+  return request({
+    url: 'api/users',
+    method: 'get'
+  })
+}
+
+export default { add, edit, del, getUsers }
 

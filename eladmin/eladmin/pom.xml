@@ -12,7 +12,8 @@
     <modules>
         <module>eladmin-common</module>
         <module>eladmin-logging</module>
-        <module>eladmin-system</module>
+        <module>eladmin-startup</module>
+        <module>system</module>
         <module>eladmin-tools</module>
         <module>eladmin-generator</module>
         <module>gold</module>

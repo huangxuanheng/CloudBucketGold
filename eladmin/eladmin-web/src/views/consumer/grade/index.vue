@@ -32,6 +32,11 @@
         <el-form-item label="佣金比例" prop="commission">
           <el-input v-model="form.commission" style="width: 370px;" />
         </el-form-item>
+
+        <el-form-item label="自购折扣" prop="discount">
+          <el-input v-model="form.discount" style="width: 370px;" />
+        </el-form-item>
+
         <el-form-item label="备注" prop="remark">
           <el-input v-model="form.remark" style="width: 370px;" />
         </el-form-item>
@@ -47,7 +52,7 @@
       ref="table"
       v-loading="crud.loading"
       lazy
-      :load="getDeptDatas"
+      :load="getGradeDatas"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
       :data="crud.data"
       row-key="id"
@@ -58,6 +63,7 @@
       <el-table-column :selectable="checkboxT" type="selection" width="55" />
       <el-table-column label="名称" prop="name" />
       <el-table-column label="佣金比例" prop="commission" />
+      <el-table-column label="自购折扣" prop="discount" />
       <el-table-column label="备注" align="center" prop="remark" />
 
       <el-table-column v-permission="['admin','dept:edit','dept:del']" label="操作" width="130px" align="center" fixed="right">
@@ -75,7 +81,7 @@
 </template>
 
 <script>
-import crudDept from '@/api/system/dept'
+import crudDept from '@/api/consumer/grade'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import { LOAD_CHILDREN_OPTIONS } from '@riophae/vue-treeselect'
@@ -84,12 +90,12 @@ import rrOperation from '@crud/RR.operation'
 import crudOperation from '@crud/CRUD.operation'
 import udOperation from '@crud/UD.operation'
 
-const defaultForm = { id: null, name: null, commission: 0, remark: '' }
+const defaultForm = { id: null, name: null, commission: 0, discount: 0, remark: '' }
 export default {
-  name: 'Dept',
+  name: 'Grade',
   components: { Treeselect, crudOperation, rrOperation, udOperation },
   cruds() {
-    return CRUD({ title: '部门', url: 'api/dept', crudMethod: { ...crudDept }})
+    return CRUD({ title: '消费商级别', url: 'api/grade/list', crudMethod: { ...crudDept }})
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 设置数据字典
@@ -97,31 +103,18 @@ export default {
 
   data() {
     return {
-      depts: [],
-      rules: {
-        name: [
-          { required: true, message: '请输入名称', trigger: 'blur' }
-        ],
-        deptSort: [
-          { required: true, message: '请输入序号', trigger: 'blur', type: 'number' }
-        ]
-      },
       permission: {
-        add: ['admin', 'dept:add'],
-        edit: ['admin', 'dept:edit'],
-        del: ['admin', 'dept:del']
-      },
-      enabledTypeOptions: [
-        { key: 'true', display_name: '正常' },
-        { key: 'false', display_name: '禁用' }
-      ]
+        add: ['admin', 'grade:add'],
+        edit: ['admin', 'grade:edit'],
+        del: ['admin', 'grade:del']
+      }
     }
   },
   methods: {
-    getDeptDatas(tree, treeNode, resolve) {
+    getGradeDatas(tree, treeNode, resolve) {
       const params = { pid: tree.id }
       setTimeout(() => {
-        crudDept.getDepts(params).then(res => {
+        crudDept.getGrades(params).then(res => {
           resolve(res.content)
         })
       }, 100)
@@ -135,13 +128,13 @@ export default {
       }
       form.enabled = `${form.enabled}`
       if (form.id != null) {
-        this.getSupDepts(form.id)
+        this.getGrade(form.id)
       } else {
-        this.getDepts()
+        this.getGrades()
       }
     },
-    getSupDepts(id) {
-      crudDept.getDeptSuperior(id).then(res => {
+    getGrade(id) {
+      crudDept.getGrade(id).then(res => {
         this.depts = res.content.map(function(obj) {
           if (obj.hasChildren && !obj.children) {
             obj.children = null
@@ -150,8 +143,8 @@ export default {
         })
       })
     },
-    getDepts() {
-      crudDept.getDepts({ enabled: true }).then(res => {
+    getGrades() {
+      crudDept.getGrades({ enabled: true }).then(res => {
         this.depts = res.content.map(function(obj) {
           if (obj.hasChildren) {
             obj.children = null
@@ -161,9 +154,9 @@ export default {
       })
     },
     // 获取弹窗内部门数据
-    loadDepts({ action, parentNode, callback }) {
+    loadGrades({ action, parentNode, callback }) {
       if (action === LOAD_CHILDREN_OPTIONS) {
-        crudDept.getDepts({ enabled: true, pid: parentNode.id }).then(res => {
+        crudDept.getGrades({ enabled: true, pid: parentNode.id }).then(res => {
           parentNode.children = res.content.map(function(obj) {
             if (obj.hasChildren) {
               obj.children = null
@@ -176,37 +169,7 @@ export default {
         })
       }
     },
-    // 提交前的验证
-    [CRUD.HOOK.afterValidateCU]() {
-      if (this.form.pid !== null && this.form.pid === this.form.id) {
-        this.$message({
-          message: '上级部门不能为空',
-          type: 'warning'
-        })
-        return false
-      }
-      if (this.form.isTop === '1') {
-        this.form.pid = null
-      }
-      return true
-    },
-    // 改变状态
-    changeEnabled(data, val) {
-      this.$confirm('此操作将 "' + this.dict.label.dept_status[val] + '" ' + data.name + '部门, 是否继续？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        crudDept.edit(data).then(res => {
-          this.crud.notify(this.dict.label.dept_status[val] + '成功', CRUD.NOTIFICATION_TYPE.SUCCESS)
-        }).catch(err => {
-          data.enabled = !data.enabled
-          console.log(err.response.data.message)
-        })
-      }).catch(() => {
-        data.enabled = !data.enabled
-      })
-    },
+
     checkboxT(row, rowIndex) {
       return row.id !== 1
     }
