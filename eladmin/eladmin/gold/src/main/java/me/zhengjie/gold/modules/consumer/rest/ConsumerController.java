@@ -16,6 +16,7 @@ import me.zhengjie.modules.system.service.UserService;
 import me.zhengjie.modules.system.service.dto.UserDto;
 import me.zhengjie.utils.ErrorMsg;
 import me.zhengjie.utils.PageUtil;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +60,7 @@ public class ConsumerController extends BaseController {
     @PreAuthorize("@el.check('consumer:list')")
     public ResponseEntity add(@RequestBody @Valid ConsumerDto consumerDto){
         checkParent(consumerDto);
-        setParentSubCount(consumerDto.getParentId(),1);
+        initBaseData(consumerDto);
         consumerService.save(consumerDto);
         return success(ErrorMsg.SUCCESS);
     }
@@ -70,9 +71,12 @@ public class ConsumerController extends BaseController {
      * @param refreshNum
      */
     private void setParentSubCount(Long parentId,int refreshNum) {
-        ConsumerDto parent = consumerService.get(parentId);
-        parent.setSubCount(parent.getSubCount()+refreshNum);
-        consumerService.update(parent);
+        ConsumerDto parent = consumerService.get(parentId==null?0:parentId);
+        if(parent!=null){
+            List<ConsumerDto> childrens = consumerService.getChildrensByParentId(parentId);
+            parent.setSubCount(childrens==null?0:childrens.size()+refreshNum);
+            consumerService.update(parent);
+        }
     }
 
     @Log("修改消费商")
@@ -81,9 +85,21 @@ public class ConsumerController extends BaseController {
     @PreAuthorize("@el.check('consumer:list')")
     public ResponseEntity modify(@RequestBody ConsumerDto consumerDto){
         checkParent(consumerDto);
-        setParentSubCount(consumerDto.getParentId(),1);
+        initBaseData(consumerDto);
+
         consumerService.update(consumerDto);
         return success(ErrorMsg.SUCCESS);
+    }
+
+    private void initBaseData(ConsumerDto consumerDto) {
+        //设置父节点子消费商数量
+        setParentSubCount(consumerDto.getParentId(),1);
+        ConsumerDto parent = consumerService.get(consumerDto.getParentId());
+        if(parent!=null){
+            consumerDto.setQueryCode(parent.getQueryCode()+parent.getParentId()+"#");
+        }else {
+            consumerDto.setQueryCode(consumerDto.getParentId()+"#");
+        }
     }
 
     /**
@@ -91,10 +107,46 @@ public class ConsumerController extends BaseController {
      * @param consumerDto
      */
     private void checkParent(ConsumerDto consumerDto) {
-        ConsumerDto parent = consumerService.get(consumerDto.getParentId());
-        UserDto userDto = userService.findById(parent.getUserId());
-        if(consumerDto.getUserId().longValue()==userDto.getId().longValue()){
-            throw new ConsumerExcetion(ErrorMsg.ERR_PARAM);
+        if(consumerDto.getParentId()==null||consumerDto.getParentId().longValue()==0){
+            //父是admin
+            consumerDto.setParentId(0l);
+        }else {
+            //检测父节点和当前绑定的节点是否同一个人
+            ConsumerDto parent = consumerService.get(consumerDto.getParentId());
+            UserDto userDto = userService.findById(parent.getUserId());
+            if(consumerDto.getUserId().longValue()==userDto.getId().longValue()){
+                throw new ConsumerExcetion(ErrorMsg.PARENT_DONT_SELF);
+            }
+        }
+
+        //检查父节点，是否存在当前绑定人的下级消费商
+        checkParentIsExistCurrentEditer(consumerDto);
+
+        //检查当前编辑的消费商的上级消费商，是否是自己的下级
+        if(consumerDto.getId()!=null){
+            ConsumerDto baseDTO = consumerService.get(consumerDto.getId());
+            if(baseDTO.getParentId().longValue()!=consumerDto.getParentId().longValue()){
+                List<ConsumerDto> childrens = consumerService.getChildrensByParentId(consumerDto.getId());
+                if(CollectionUtils.isNotEmpty(childrens)){
+                    childrens.forEach(child->{
+                        if(child.getUserId().longValue()==consumerDto.getUserId().longValue()){
+                            throw new ConsumerExcetion(ErrorMsg.UP_LINE_DONT_DOWN);
+                        }
+                    });
+                }
+            }
+        }
+
+    }
+
+    private void checkParentIsExistCurrentEditer(ConsumerDto consumerDto) {
+        List<ConsumerDto> childrens = consumerService.getChildrensByParentId(consumerDto.getParentId());
+        if(CollectionUtils.isNotEmpty(childrens)){
+            childrens.forEach(child->{
+                if(child.getUserId().longValue()==consumerDto.getUserId().longValue()){
+                    throw new ConsumerExcetion(ErrorMsg.SUB_CONSUMER_HAS_SELF);
+                }
+            });
         }
     }
 
@@ -104,8 +156,10 @@ public class ConsumerController extends BaseController {
     @GetMapping
     @PreAuthorize("@el.check('consumer:list')")
     public ResponseEntity<ConsumerDto> get(Long id){
+        if(id==0){
+            return success(null);
+        }
         ConsumerDto baseDTO = consumerService.get(id);
-
 
         setConsumerRelated(baseDTO);
 
@@ -122,11 +176,12 @@ public class ConsumerController extends BaseController {
         //父节点
         ConsumerDto parent = consumerService.get(baseDTO.getParentId());
         baseDTO.setParent(parent);
-        userDto = userService.findById(parent.getUserId());
-        parent.setUser(userDto);
+        if(parent!=null){
+            userDto = userService.findById(parent.getUserId());
+            parent.setUser(userDto);
+        }
 
-
-        if(!baseDTO.isLeaf()){
+        if(!baseDTO.isLeaf()&&baseDTO.getParentId()!=0){
             //子消费商
             List<ConsumerDto> consumerDtoList = consumerService.getChildrensByParentId(baseDTO.getParentId());
             baseDTO.setChildrens(consumerDtoList);
