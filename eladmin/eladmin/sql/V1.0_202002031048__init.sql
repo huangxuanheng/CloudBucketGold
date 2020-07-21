@@ -100,6 +100,7 @@ CREATE TABLE `t_consumer` (
   `user_id`  bigint(20) NOT NULL default 0 COMMENT '用户ID',
   `grade_id` TINYINT  NOT NULL DEFAULT 0  COMMENT '级别id',
   `sub_count` int not null default 0 COMMENT '子消费商数目',
+  `query_code` varchar(200) NOT NULL default "" COMMENT '查询编码，查询父子关系，用parentId#id隔开',
   `remark` varchar(200) NOT NULL default "" COMMENT '备注',
    `is_del` bit(1)  NOT NULL DEFAULT 0 COMMENT '是否删除，0正常,1删除',
    `create_by` varchar(255) NOT NULL default '' COMMENT '创建人ID',

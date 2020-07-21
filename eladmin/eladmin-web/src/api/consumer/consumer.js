@@ -10,6 +10,9 @@ export function getConsumers(params) {
 }
 
 export function getConsumer(id) {
+  if(id===null){
+    id=0
+  }
     const params = {
         id: id
       }

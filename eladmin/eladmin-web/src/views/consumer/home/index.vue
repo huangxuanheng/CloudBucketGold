@@ -26,10 +26,9 @@
 
         <el-form-item label="用户" prop="users">
           <el-select
-            v-model="form.users"
+            v-model="form.userId"
             style="width: 178px"
             placeholder="请选择"
-            @remove-tag="deleteUserTag"
             @change="changeUser"
           >
             <el-option
@@ -43,11 +42,9 @@
 
         <el-form-item label="级别" prop="grades">
           <el-select
-            v-model="form.grades"
+            v-model="form.gradeId"
             style="width: 178px"
-            multiple
             placeholder="请选择"
-            @remove-tag="deleteGradeTag"
             @change="changeGrade"
           >
             <el-option
@@ -61,11 +58,9 @@
 
         <el-form-item label="上级" prop="parents">
           <el-select
-            v-model="form.parents"
+            v-model="form.parentId"
             style="width: 178px"
-            multiple
             placeholder="请选择"
-            @remove-tag="deleteParentTag"
             @change="changeParent"
           >
             <el-option
@@ -100,7 +95,7 @@
       @select-all="crud.selectAllChange"
       @selection-change="crud.selectionChangeHandler"
     >
-      <el-table-column :selectable="checkboxT" type="selection" width="55" />
+      <el-table-column type="selection" width="55" />
       <el-table-column label="用户" prop="user.username" />
       <el-table-column label="级别" prop="grade.name" />
       <el-table-column label="上级" prop="parent.user.username" />
@@ -111,7 +106,6 @@
           <udOperation
             :data="scope.row"
             :permission="permission"
-            :disabled-dle="scope.row.id === 1"
             msg="确定删除吗,如果存在下级节点则一并删除，此操作不能撤销！"
           />
         </template>
@@ -133,7 +127,10 @@ import rrOperation from '@crud/RR.operation'
 import crudOperation from '@crud/CRUD.operation'
 import udOperation from '@crud/UD.operation'
 
-const defaultForm = { id: null, parentId: 0, remark: '', userId: 0, gradeId: 0, parent: null, grade: null, user: null, users: [], parents: [], grades: [] }
+let consumer_users=[]
+let consumer_parents=[]
+let consumer_grades=[]
+const defaultForm = { id: null, parentId: null, remark: '', userId: null, gradeId: null, parent: null, grade: null, user: null, users: [], parents: [], grades: [] }
 export default {
   name: 'Consumer',
   components: { Treeselect, crudOperation, rrOperation, udOperation },
@@ -186,37 +183,60 @@ export default {
       // form.parents.push(form.parent)
       // form.users.push(form.user)
       // form.grades.push(form.grade)
+      consumer_users=[]
+       const users = []
+      form.users.forEach(function(job, index) {
+        users.push(job.id)
+        // 初始化编辑时候的岗位
+        const data = { id: job.id }
+        consumer_users.push(data)
+      })
+
+      consumer_parents=[]
+      const parents = []
+      form.parents.forEach(function(job, index) {
+        parents.push(job.id)
+        // 初始化编辑时候的岗位
+        const data = { id: job.id }
+        consumer_parents.push(data)
+      })
+      consumer_grades=[]
+      const grades = []
+      form.parents.forEach(function(job, index) {
+        grades.push(job.id)
+        // 初始化编辑时候的岗位
+        const data = { id: job.id }
+        consumer_grades.push(data)
+      })
+      
+       form.users=users
+       form.parents=parents
+       form.grades=grades
     },
     // 提交前做的操作
     [CRUD.HOOK.afterValidateCU](crud) {
-      if (crud.form.name === null) {
-        this.$message({
-          message: '消费商名称不能为空',
-          type: 'warning'
-        })
-        return false
-      } else if (crud.form.parents.length === 0) {
-        this.$message({
-          message: '上级不能为空',
-          type: 'warning'
-        })
-        return false
-      } else if (crud.form.users.length === 0) {
+      if (crud.form.userId ===0) {
         this.$message({
           message: '用户不能为空',
           type: 'warning'
         })
         return false
-      } else if (crud.form.grades.length === 0) {
+      } else if (crud.form.gradeId ===0) {
         this.$message({
           message: '级别不能为空',
           type: 'warning'
         })
         return false
       }
-      crud.form.parentId = parents[0].id
-      crud.form.userId = users[0].id
-      crud.form.gradeId = grades[0].id
+      
+      // if (crud.form.parents.length === 0){
+      //   crud.form.parentId=0
+      // }else{
+      //   crud.form.parentId = consumer_parents[0].id
+      // }
+      // crud.form.userId = consumer_users[0].id
+      // crud.form.gradeId = consumer_grades[0].id
+      
       return true
     },
 
@@ -247,46 +267,28 @@ export default {
       })
     },
     changeUser(value) {
-      users = []
-      value.forEach(function(data, index) {
-        const job = { id: data }
-        users.push(job)
-      })
+      consumer_users = [{id:value}]
+      // value.forEach(function(data, index) {
+      //   const job = { id: data }
+      //   consumer_users.push(job)
+      // })
+
     },
-    deleteUserTag(value) {
-      users.forEach(function(data, index) {
-        if (data.id === value) {
-          users.splice(index, value)
-        }
-      })
-    },
+
     changeParent(value) {
-      parents = []
-      value.forEach(function(data, index) {
-        const job = { id: data }
-        parents.push(job)
-      })
+      consumer_parents = [{id:value}]
+      // value.forEach(function(data, index) {
+      //   const job = { id: data }
+      //   consumer_parents.push(job)
+      // })
     },
-    deleteParentTag(value) {
-      parents.forEach(function(data, index) {
-        if (data.id === value) {
-          parents.splice(index, value)
-        }
-      })
-    },
+
     changeGrade(value) {
-      grades = []
-      value.forEach(function(data, index) {
-        const job = { id: data }
-        grades.push(job)
-      })
-    },
-    deleteGradeTag(value) {
-      grades.forEach(function(data, index) {
-        if (data.id === value) {
-          grades.splice(index, value)
-        }
-      })
+      consumer_grades = [{id:value}]
+      // value.forEach(function(data, index) {
+      //   const job = { id: data }
+      //   grades.push(job)
+      // })
     },
     // 获取弹窗内部门数据
     loadConsumers({ action, parentNode, callback }) {

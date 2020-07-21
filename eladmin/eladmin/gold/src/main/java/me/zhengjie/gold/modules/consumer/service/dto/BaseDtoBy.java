@@ -17,7 +17,7 @@ import me.zhengjie.base.BaseDTO;
 @Setter
 public class BaseDtoBy extends BaseDTO {
     @ApiModelProperty(value = "id")
-    public Long id;
+    private Long id;
 
     @ApiModelProperty(value = "是否刪除")
     private Boolean isDel=false;

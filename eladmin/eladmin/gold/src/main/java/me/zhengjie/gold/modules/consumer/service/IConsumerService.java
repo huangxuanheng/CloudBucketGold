@@ -17,4 +17,6 @@ public interface IConsumerService extends IBaseService {
      * @return
      */
     List<ConsumerDto> getChildrensByParentId(Long parentId);
+
+    List<ConsumerDto> getChildrensByQueryCode(String queryCode);
 }

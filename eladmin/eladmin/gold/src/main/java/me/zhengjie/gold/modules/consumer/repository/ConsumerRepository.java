@@ -17,5 +17,5 @@ public interface ConsumerRepository extends BaseRepository<Consumer, Long> {
      * @param parentId
      * @return
      */
-    List<ConsumerDto> findByParentId(Long parentId);
+    List<Consumer> findByParentId(Long parentId);
 }

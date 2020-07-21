@@ -33,4 +33,6 @@ public class Consumer extends BaseEntityBy {
     @ApiModelProperty(value = "子消费商数量")
     private int subCount;
 
+    @ApiModelProperty(value = "查询编码")
+    private String queryCode;
 }

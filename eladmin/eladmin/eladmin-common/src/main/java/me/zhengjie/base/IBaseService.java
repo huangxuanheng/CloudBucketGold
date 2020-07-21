@@ -2,14 +2,13 @@ package me.zhengjie.base;
 
 
 import me.zhengjie.annotation.DataTransform;
+import me.zhengjie.exception.ConsumerExcetion;
+import me.zhengjie.utils.ErrorMsg;
 import me.zhengjie.utils.ModelUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import me.zhengjie.utils.TransformType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * author harry
@@ -24,17 +23,17 @@ public interface IBaseService {
      */
     default <T extends BaseDTO>void save(T dto){
         BaseRepository jpaRepository = getJpaRepository();
-        jpaRepository.save(ModelUtils.toEntity(dto,getTansformClazz("entity")));
+        jpaRepository.save(ModelUtils.toEntity(dto,getTansformClazz(TransformType.ENTITY)));
     }
 
-    default Class getTansformClazz(String type){
+    default Class getTansformClazz(TransformType type){
         DataTransform annotation = this.getClass().getAnnotation(DataTransform.class);
         if(annotation==null){
-            return null;
+            throw new ConsumerExcetion(ErrorMsg.ERR_ARR_PARAM_LEN);
         }
-        if(type=="dto"){
+        if(type==TransformType.DTO){
             return annotation.dto();
-        }else if(type=="entity"){
+        }else if(type==TransformType.ENTITY){
             return annotation.entity();
         }
         return null;
@@ -46,7 +45,7 @@ public interface IBaseService {
      */
     default <T extends BaseDTO>void update(T dto){
         JpaRepository jpaRepository = getJpaRepository();
-        jpaRepository.saveAndFlush(ModelUtils.toEntity(dto,getTansformClazz("entity")));
+        jpaRepository.saveAndFlush(ModelUtils.toEntity(dto,getTansformClazz(TransformType.ENTITY)));
     }
 
     /**
@@ -69,7 +68,7 @@ public interface IBaseService {
         if(s==null){
             return null;
         }
-        return (T) ModelUtils.toModel(s,getTansformClazz("dto"));
+        return (T) ModelUtils.toModel(s,getTansformClazz(TransformType.DTO));
     }
 
     /**
@@ -79,7 +78,7 @@ public interface IBaseService {
     default <T extends BaseDTO>List<T> getAll(){
         JpaRepository<BaseEntity,Long> jpaRepository = getJpaRepository();
 
-        return ModelUtils.toModels(jpaRepository.findAll(),getTansformClazz("dto"));
+        return ModelUtils.toModels(jpaRepository.findAll(),getTansformClazz(TransformType.DTO));
     }
 
     /**
