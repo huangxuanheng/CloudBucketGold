@@ -42,7 +42,7 @@ public class ConsumerDto extends BaseDtoBy{
     private boolean isLeaf;
 
     @ApiModelProperty(value = "查询编码")
-    private String queryCode;
+    private String queryCode="";
 
     @ApiModelProperty(value = "父消费商")
     private ConsumerDto parent;

@@ -21,9 +21,11 @@ public interface IBaseService {
      * 存储记录
      * @param dto
      */
-    default <T extends BaseDTO>void save(T dto){
+    default <T extends BaseDTO>T save(T dto){
         BaseRepository jpaRepository = getJpaRepository();
-        jpaRepository.save(ModelUtils.toEntity(dto,getTansformClazz(TransformType.ENTITY)));
+        Object save = jpaRepository.save(ModelUtils.toEntity(dto, getTansformClazz(TransformType.ENTITY)));
+        Object o = ModelUtils.toModel((BaseEntity) save, getTansformClazz(TransformType.DTO));
+        return (T) o;
     }
 
     default Class getTansformClazz(TransformType type){
