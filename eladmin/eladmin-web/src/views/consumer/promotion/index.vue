@@ -84,9 +84,7 @@
 </template>
 
 <script>
-import crudConsumer from '@/api/consumer/consumer'
-import crudUser from '@/api/system/user'
-import crudGrade from '@/api/consumer/grade'
+import crudPromotion from '@/api/consumer/promotion'
 
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
@@ -101,7 +99,7 @@ export default {
   name: 'Consumer',
   components: { Treeselect, crudOperation, rrOperation, udOperation },
   cruds() {
-    return CRUD({ title: '消费商级别', url: 'api/consumer/list', crudMethod: { ...crudConsumer }})
+    return CRUD({ title: '促销', url: 'api/promotion/list', crudMethod: { ...crudPromotion }})
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 设置数据字典
@@ -123,7 +121,7 @@ export default {
     getConsumerDatas(tree, treeNode, resolve) {
       const params = { pid: tree.id }
       setTimeout(() => {
-        crudConsumer.getConsumers(params).then(res => {
+        crudPromotion.getConsumers(params).then(res => {
           resolve(res.content)
         })
       }, 100)
@@ -184,7 +182,7 @@ export default {
     },
 
     getParent(id) {
-      crudConsumer.getConsumer(id).then(res => {
+      crudPromotion.getConsumer(id).then(res => {
         this.parent = res.content
       })
     },
@@ -200,12 +198,12 @@ export default {
     },
 
     getParents() {
-      crudConsumer.getConsumers({ enabled: true }).then(res => {
+      crudPromotion.getConsumers({ enabled: true }).then(res => {
         this.parents = res.content
       })
     },
     getConsumers() {
-      crudConsumer.getConsumers({ enabled: true }).then(res => {
+      crudPromotion.getConsumers({ enabled: true }).then(res => {
         this.parents = res.content
       })
     },
@@ -254,7 +252,7 @@ export default {
     // 获取弹窗内部门数据
     loadConsumers({ action, parentNode, callback }) {
       if (action === LOAD_CHILDREN_OPTIONS) {
-        crudConsumer.getConsumers({ enabled: true, pid: parentNode.id }).then(res => {
+        crudPromotion.getConsumers({ enabled: true, pid: parentNode.id }).then(res => {
           parentNode.children = res.content.map(function(obj) {
             if (obj.hasChildren) {
               obj.children = null

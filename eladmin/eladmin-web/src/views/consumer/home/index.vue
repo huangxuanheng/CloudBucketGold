@@ -135,7 +135,7 @@ export default {
   name: 'Consumer',
   components: { Treeselect, crudOperation, rrOperation, udOperation },
   cruds() {
-    return CRUD({ title: '消费商级别', url: 'api/consumer/list', crudMethod: { ...crudConsumer }})
+    return CRUD({ title: '消费商', url: 'api/consumer/list', crudMethod: { ...crudConsumer }})
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 设置数据字典

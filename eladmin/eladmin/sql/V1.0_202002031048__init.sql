@@ -163,7 +163,7 @@ CREATE TABLE `t_promotion` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `name` varchar(20) NOT NULL default '' COMMENT '促销方案名称',
   `introduct` varchar(200) NOT NULL default '' COMMENT '促销简介',
-  `rule` int not null default 0 comment '促销规则：1-满多少减多少，2-满多少打折，3-第几杯半价',
+  `rule` int not null default 0 comment '促销规则：1-满多少减多少，2-满多少打折，3-第几件半价',
   `condition` int not null default 0 comment 'rule促销规则中满足的条件',
   `reduce` int not null default 0 comment '促销规则：1时，表示减少金额(分)，2时，表示折扣（计算时需要除以100），3时，表示数量',
    `is_del` bit(1)  NOT NULL DEFAULT 0 COMMENT '是否删除，0正常,1删除',

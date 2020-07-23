@@ -95,7 +95,7 @@ export default {
   name: 'Grade',
   components: { Treeselect, crudOperation, rrOperation, udOperation },
   cruds() {
-    return CRUD({ title: '消费商级别', url: 'api/grade/list', crudMethod: { ...crudDept }})
+    return CRUD({ title: '级别', url: 'api/grade/list', crudMethod: { ...crudDept }})
   },
   mixins: [presenter(), header(), form(defaultForm), crud()],
   // 设置数据字典
