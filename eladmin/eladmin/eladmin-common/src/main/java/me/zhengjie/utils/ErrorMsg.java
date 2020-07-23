@@ -15,6 +15,8 @@ public enum ErrorMsg {
     HAS_SUB_CONSUMER(502,"当前消费商有子消费商，不能删除",ModuleType.CONSUMER),
     SUB_CONSUMER_HAS_SELF(503,"上级消费商已经包含当前用户",ModuleType.CONSUMER),
     UP_LINE_DONT_DOWN(504,"指定的上级已经存在于当前消费商的下级",ModuleType.CONSUMER),
+    CONSUMER_ID_NOT_NULL(505,"消费商id不能为空",ModuleType.CONSUMER),
+    CONSUMER_EXIST(506,"当前用户的消费商已经存在",ModuleType.CONSUMER),
     NO_DEFINE_DATA_TRANFORM(800,"service实现类必须要指定注解@DataTransform标识数据实体转换类型",ModuleType.CONSUMER),
     ;
 

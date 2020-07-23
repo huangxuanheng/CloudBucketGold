@@ -3,11 +3,11 @@ package me.zhengjie.gold.modules.consumer.rest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import me.zhengjie.annotation.Log;
 import me.zhengjie.base.BaseController;
 import me.zhengjie.base.BaseDTO;
 import me.zhengjie.exception.ConsumerExcetion;
+import me.zhengjie.gold.modules.consumer.domain.Consumer;
 import me.zhengjie.gold.modules.consumer.service.IConsumerService;
 import me.zhengjie.gold.modules.consumer.service.IGradeService;
 import me.zhengjie.gold.modules.consumer.service.dto.ConsumerDto;
@@ -59,22 +59,21 @@ public class ConsumerController extends BaseController {
     @PostMapping
     @PreAuthorize("@el.check('consumer:list')")
     public ResponseEntity add(@RequestBody @Valid ConsumerDto consumerDto){
-        checkParent(consumerDto);
-        initBaseData(consumerDto);
-        consumerService.save(consumerDto);
+        check(consumerDto);
+        ConsumerDto save = consumerService.save(consumerDto);
+        setQueryCODE(save);
         return success(ErrorMsg.SUCCESS);
     }
 
     /**
      * 将父节点子数量更新
      * @param parentId
-     * @param refreshNum
      */
-    private void setParentSubCount(Long parentId,int refreshNum) {
+    private void setParentSubCount(Long parentId) {
         ConsumerDto parent = consumerService.get(parentId==null?0:parentId);
         if(parent!=null){
-            List<ConsumerDto> childrens = consumerService.getChildrensByParentId(parentId);
-            parent.setSubCount(childrens==null?0:childrens.size()+refreshNum);
+            List<ConsumerDto> childrens = consumerService.getChildrensByQueryCode(parent.getQueryCode());
+            parent.setSubCount(childrens==null?0:childrens.size()-1);
             consumerService.update(parent);
         }
     }
@@ -84,29 +83,35 @@ public class ConsumerController extends BaseController {
     @PutMapping
     @PreAuthorize("@el.check('consumer:list')")
     public ResponseEntity modify(@RequestBody ConsumerDto consumerDto){
-        checkParent(consumerDto);
-        initBaseData(consumerDto);
-
+        check(consumerDto);
         consumerService.update(consumerDto);
+        setQueryCODE(consumerDto);
         return success(ErrorMsg.SUCCESS);
     }
 
-    private void initBaseData(ConsumerDto consumerDto) {
+    private void setQueryCODE(ConsumerDto consumerDto) {
         //设置父节点子消费商数量
-        setParentSubCount(consumerDto.getParentId(),1);
+        if(consumerDto.getId()==null){
+            throw new ConsumerExcetion(ErrorMsg.CONSUMER_ID_NOT_NULL);
+        }
         ConsumerDto parent = consumerService.get(consumerDto.getParentId());
         if(parent!=null){
-            consumerDto.setQueryCode(parent.getQueryCode()+parent.getParentId()+"#");
+            consumerDto.setQueryCode(parent.getQueryCode()+consumerDto.getId()+"#");
         }else {
-            consumerDto.setQueryCode(consumerDto.getParentId()+"#");
+            consumerDto.setQueryCode("0#"+consumerDto.getId()+"#");
         }
+        consumerService.update(consumerDto);
+        setParentSubCount(consumerDto.getParentId());
+//        List<ConsumerDto> childrens = consumerService.getChildrensByQueryCode(parent.getQueryCode());
+//        parent.setSubCount(childrens==null?0:childrens.size()-1);
+//        consumerService.update(parent);
     }
 
     /**
      * 检查父节点，消费商绑定的用户ID和上级消费商绑定的用户ID不能是同一个人
      * @param consumerDto
      */
-    private void checkParent(ConsumerDto consumerDto) {
+    private void check(ConsumerDto consumerDto) {
         if(consumerDto.getParentId()==null||consumerDto.getParentId().longValue()==0){
             //父是admin
             consumerDto.setParentId(0l);
@@ -123,20 +128,27 @@ public class ConsumerController extends BaseController {
         checkParentIsExistCurrentEditer(consumerDto);
 
         //检查当前编辑的消费商的上级消费商，是否是自己的下级
+//        boolean isEiditerFlag=false;
         if(consumerDto.getId()!=null){
             ConsumerDto baseDTO = consumerService.get(consumerDto.getId());
             if(baseDTO.getParentId().longValue()!=consumerDto.getParentId().longValue()){
+                ConsumerDto parent = consumerService.get(consumerDto.getParentId());
                 List<ConsumerDto> childrens = consumerService.getChildrensByParentId(consumerDto.getId());
                 if(CollectionUtils.isNotEmpty(childrens)){
                     childrens.forEach(child->{
-                        if(child.getUserId().longValue()==consumerDto.getUserId().longValue()){
+                        if(child.getUserId().longValue()==parent.getUserId().longValue()){
                             throw new ConsumerExcetion(ErrorMsg.UP_LINE_DONT_DOWN);
                         }
                     });
                 }
             }
+//            isEiditerFlag=baseDTO.getUserId().longValue()==consumerDto.getUserId()&&baseDTO.getParentId()==consumerDto.getParentId();
         }
-
+        //检查当前绑定的用户是否已经成为消费商
+        List<Consumer> consumers = consumerService.findByUserId(consumerDto.getUserId());
+        if(CollectionUtils.isNotEmpty(consumers)){
+            throw new ConsumerExcetion(ErrorMsg.CONSUMER_EXIST);
+        }
     }
 
     private void checkParentIsExistCurrentEditer(ConsumerDto consumerDto) {
@@ -205,8 +217,8 @@ public class ConsumerController extends BaseController {
             if(baseDTO.getSubCount()>0){
                 throw new ConsumerExcetion(ErrorMsg.HAS_SUB_CONSUMER);
             }
-            setParentSubCount(baseDTO.getParentId(),-1);
             consumerService.deleted(id);
+            setParentSubCount(baseDTO.getParentId());
         }
         return success(null);
     }

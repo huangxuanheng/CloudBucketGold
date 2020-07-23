@@ -1,5 +1,6 @@
 package me.zhengjie.gold.modules.consumer.repository;
 
+import com.google.common.collect.Lists;
 import me.zhengjie.base.BaseRepository;
 import me.zhengjie.gold.modules.consumer.domain.Consumer;
 import me.zhengjie.gold.modules.consumer.domain.Grade;
@@ -18,4 +19,11 @@ public interface ConsumerRepository extends BaseRepository<Consumer, Long> {
      * @return
      */
     List<Consumer> findByParentId(Long parentId);
+
+    /**
+     * 根据用户id查找
+     * @param userId
+     * @return
+     */
+    List<Consumer>findByUserId(Long userId);
 }

@@ -1,6 +1,7 @@
 package me.zhengjie.gold.modules.consumer.service;
 
 import me.zhengjie.base.IBaseService;
+import me.zhengjie.gold.modules.consumer.domain.Consumer;
 import me.zhengjie.gold.modules.consumer.service.dto.ConsumerDto;
 
 import java.util.List;
@@ -18,5 +19,17 @@ public interface IConsumerService extends IBaseService {
      */
     List<ConsumerDto> getChildrensByParentId(Long parentId);
 
+    /**
+     * 根据queryCODE查询所有子消费商
+     * @param queryCode
+     * @return
+     */
     List<ConsumerDto> getChildrensByQueryCode(String queryCode);
+
+    /**
+     * 根据用户id查找
+     * @param userId
+     * @return
+     */
+    List<Consumer>findByUserId(Long userId);
 }

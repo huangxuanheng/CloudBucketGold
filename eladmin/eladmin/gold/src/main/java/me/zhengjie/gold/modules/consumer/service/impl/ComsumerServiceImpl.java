@@ -60,4 +60,9 @@ public class ComsumerServiceImpl implements IConsumerService {
         List<Consumer> all = consumerRepository.findAll(specification);
         return ModelUtils.toModels(all,ConsumerDto.class);
     }
+
+    @Override
+    public List<Consumer> findByUserId(Long userId) {
+        return consumerRepository.findByUserId(userId);
+    }
 }
